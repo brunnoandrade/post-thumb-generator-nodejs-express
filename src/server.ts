@@ -1,8 +1,16 @@
 import express, { Request, Response } from "express";
 import puppeteer from "puppeteer";
 import path from "path";
+import cors from "cors";
 
 const app = express();
+
+app.use(
+  cors({
+    origin: ["http://localhost:3000", "http://localhost:3001"],
+    credentials: true,
+  })
+);
 
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
