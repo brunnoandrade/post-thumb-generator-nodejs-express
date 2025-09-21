@@ -23,7 +23,7 @@ app.get("/generate-cover", async (req: Request, res: Response) => {
 
     res.render(
       "cover",
-      { title, author, date, tags: tagsArray },
+      { title, author, date, tags: tagsArray.slice(0, 3) },
       async (err, html) => {
         if (err || !html) {
           return res.status(500).send("Erro ao renderizar HTML");
