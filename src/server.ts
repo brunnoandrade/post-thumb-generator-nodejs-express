@@ -29,7 +29,10 @@ app.get("/generate-cover", async (req: Request, res: Response) => {
           return res.status(500).send("Erro ao renderizar HTML");
         }
 
-        const browser = await puppeteer.launch();
+        const browser = await puppeteer.launch({
+          headless: true,
+          args: ["--no-sandbox", "--disable-setuid-sandbox"],
+        });
         const page = await browser.newPage();
         await page.setContent(html, { waitUntil: "networkidle0" });
 
