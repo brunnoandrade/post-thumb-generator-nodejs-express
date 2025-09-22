@@ -1,6 +1,5 @@
 import express, { Request, Response } from "express";
-import chromium from "@sparticuz/chromium";
-import puppeteer from "puppeteer-core";
+import nodeHtmlToImage from "node-html-to-image";
 import path from "path";
 import cors from "cors";
 
@@ -30,32 +29,22 @@ app.get("/generate-cover", async (req: Request, res: Response) => {
           return res.status(500).send("Erro ao renderizar HTML");
         }
 
-        const browser = await puppeteer.launch({
-          args: [
-            ...chromium.args,
-            "--no-sandbox",
-            "--disable-setuid-sandbox",
-            "--disable-dev-shm-usage",
-            "--disable-accelerated-2d-canvas",
-            "--no-first-run",
-            "--no-zygote",
-            "--single-process",
-            "--disable-gpu",
-          ],
-          executablePath: await chromium.executablePath(),
-          headless: true,
+        const result = await nodeHtmlToImage({
+          html,
+          type: "png",
+          quality: 100,
+          puppeteerArgs: {
+            defaultViewport: {
+              width: 1200,
+              height: 630,
+              deviceScaleFactor: 1,
+            },
+          },
         });
-        const page = await browser.newPage();
-        await page.setContent(html, { waitUntil: "networkidle0" });
 
-        const element = await page.$(".card");
-        if (!element) {
-          await browser.close();
-          return res.status(500).send("Elemento .card não encontrado");
-        }
-
-        const buffer = await element.screenshot({ type: "png" });
-        await browser.close();
+        const buffer = Buffer.isBuffer(result)
+          ? result
+          : Buffer.from(result as string, "binary");
 
         res.set("Content-Type", "image/png");
         res.send(buffer);
