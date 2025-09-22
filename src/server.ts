@@ -1,6 +1,5 @@
 import express, { Request, Response } from "express";
-import chromium from "chrome-aws-lambda";
-import puppeteer from "puppeteer-core";
+import puppeteer from "puppeteer";
 import path from "path";
 import cors from "cors";
 
@@ -30,12 +29,7 @@ app.get("/generate-cover", async (req: Request, res: Response) => {
           return res.status(500).send("Erro ao renderizar HTML");
         }
 
-        const browser = await puppeteer.launch({
-          args: chromium.args,
-          executablePath:
-            (await chromium.executablePath) || "/usr/bin/google-chrome",
-          headless: true,
-        });
+        const browser = await puppeteer.launch();
         const page = await browser.newPage();
         await page.setContent(html, { waitUntil: "networkidle0" });
 
