@@ -41,8 +41,7 @@ app.get("/generate-cover", async (req: Request, res: Response) => {
             "--single-process",
             "--disable-gpu",
           ],
-          executablePath:
-            process.env.PUPPETEER_EXECUTABLE_PATH || puppeteer.executablePath(),
+          executablePath: puppeteer.executablePath(),
         });
         const page = await browser.newPage();
         await page.setContent(html, { waitUntil: "networkidle0" });
