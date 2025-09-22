@@ -29,8 +29,6 @@ app.get("/generate-cover", async (req: Request, res: Response) => {
           return res.status(500).send("Erro ao renderizar HTML");
         }
 
-        console.log("Chromium path:", await puppeteer.executablePath());
-
         const browser = await puppeteer.launch({
           headless: true,
           args: [
@@ -43,7 +41,7 @@ app.get("/generate-cover", async (req: Request, res: Response) => {
             "--single-process",
             "--disable-gpu",
           ],
-          executablePath: await puppeteer.executablePath(),
+          executablePath: puppeteer.executablePath(),
         });
         const page = await browser.newPage();
         await page.setContent(html, { waitUntil: "networkidle0" });
