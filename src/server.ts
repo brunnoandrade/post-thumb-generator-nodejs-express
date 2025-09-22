@@ -31,7 +31,17 @@ app.get("/generate-cover", async (req: Request, res: Response) => {
         }
 
         const browser = await puppeteer.launch({
-          args: chromium.args,
+          args: [
+            ...chromium.args,
+            "--no-sandbox",
+            "--disable-setuid-sandbox",
+            "--disable-dev-shm-usage",
+            "--disable-accelerated-2d-canvas",
+            "--no-first-run",
+            "--no-zygote",
+            "--single-process",
+            "--disable-gpu",
+          ],
           executablePath: await chromium.executablePath(),
           headless: true,
         });
