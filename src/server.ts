@@ -1,17 +1,10 @@
 import express, { Request, Response } from "express";
-import { execSync } from "child_process";
-import puppeteer from "puppeteer";
+import chromium from "@sparticuz/chromium";
+import puppeteer from "puppeteer-core";
 import path from "path";
 import cors from "cors";
 
 const app = express();
-
-try {
-  console.log("🔍 Verificando Chromium...");
-  execSync("puppeteer browsers install chrome", { stdio: "inherit" });
-} catch (err) {
-  console.warn("⚠️ Não consegui baixar Chromium automaticamente:", err);
-}
 
 app.use(
   cors({
@@ -37,23 +30,11 @@ app.get("/generate-cover", async (req: Request, res: Response) => {
           return res.status(500).send("Erro ao renderizar HTML");
         }
 
-        console.log("Chromium path:", puppeteer.executablePath());
-
         const browser = await puppeteer.launch({
+          args: chromium.args,
+          executablePath: await chromium.executablePath(),
           headless: true,
-          args: [
-            "--no-sandbox",
-            "--disable-setuid-sandbox",
-            "--disable-dev-shm-usage",
-            "--disable-accelerated-2d-canvas",
-            "--no-first-run",
-            "--no-zygote",
-            "--single-process",
-            "--disable-gpu",
-          ],
-          executablePath: puppeteer.executablePath(),
         });
-
         const page = await browser.newPage();
         await page.setContent(html, { waitUntil: "networkidle0" });
 
