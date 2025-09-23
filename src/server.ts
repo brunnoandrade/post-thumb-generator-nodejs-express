@@ -34,8 +34,6 @@ app.get("/generate-cover", async (req: Request, res: Response) => {
           type: "png",
           quality: 100,
           puppeteerArgs: {
-            executablePath: "/usr/bin/chromium-browser",
-            args: ["--no-sandbox", "--disable-setuid-sandbox"],
             defaultViewport: {
               width: 1200,
               height: 630,
