@@ -24,16 +24,23 @@ app.get("/generate-cover", async (req: Request, res: Response) => {
   ctx.clearRect(0, 0, width, height);
 
   const borderSize = 12;
+  const borderRadius = 24;
+
   ctx.fillStyle = "#c25fff";
-  ctx.fillRect(0, 0, width, height);
+  ctx.beginPath();
+  ctx.roundRect(0, 0, width, height, borderRadius);
+  ctx.fill();
 
   ctx.fillStyle = "#ffffff";
-  ctx.fillRect(
+  ctx.beginPath();
+  ctx.roundRect(
     borderSize,
     borderSize,
     width - borderSize * 2,
-    height - borderSize * 2
+    height - borderSize * 2,
+    borderRadius - 4
   );
+  ctx.fill();
 
   const padding = 48;
   const innerX = borderSize + padding;
@@ -48,7 +55,9 @@ app.get("/generate-cover", async (req: Request, res: Response) => {
   const words = String(title || "Título aqui").split(" ");
   let line = "";
   let y = innerY;
-  const lineHeight = 90;
+
+  const lineHeight = 110;
+
   words.forEach((word) => {
     const testLine = line + word + " ";
     const metrics = ctx.measureText(testLine);
@@ -65,12 +74,11 @@ app.get("/generate-cover", async (req: Request, res: Response) => {
   const footerY = height - borderSize - padding - 20;
 
   const svgLogo = `
-  <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 500 500" fill="#c25fff">
-    <path d="M111.83,18.25v463.5H388.17V18.25Zm243,432.21H145.14V51.56H354.86Z"/>
-    <path d="M320.48,82.09H181.22V420.38H320.48V292.73l-22-18.08,22-16.43Zm-48.34,291h-41V279.63l41-21.48Zm0-169.12-41,21.37.08-93.31h41Z"/>
-  </svg>
-`;
-
+    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 500 500" fill="#c25fff">
+      <path d="M111.83,18.25v463.5H388.17V18.25Zm243,432.21H145.14V51.56H354.86Z"/>
+      <path d="M320.48,82.09H181.22V420.38H320.48V292.73l-22-18.08,22-16.43Zm-48.34,291h-41V279.63l41-21.48Zm0-169.12-41,21.37.08-93.31h41Z"/>
+    </svg>
+  `;
   const svgBase64 = `data:image/svg+xml;base64,${Buffer.from(svgLogo).toString(
     "base64"
   )}`;
@@ -116,7 +124,7 @@ app.get("/generate-cover", async (req: Request, res: Response) => {
 
       ctx.fillStyle = "#222";
       ctx.textAlign = "center";
-      ctx.fillText(text, tagX - tagWidth / 2, footerY, tagWidth);
+      ctx.fillText(text, tagX - tagWidth / 2, footerY);
 
       tagX -= tagWidth + tagGap;
     });
