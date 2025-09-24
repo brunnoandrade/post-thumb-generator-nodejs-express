@@ -41,7 +41,7 @@ app.get("/generate-cover", async (req: Request, res: Response) => {
   const innerWidth = width - borderSize * 2 - padding * 2;
 
   ctx.fillStyle = "#222";
-  ctx.font = "bold 72px Arial";
+  ctx.font = "bold 92px Arial";
   ctx.textAlign = "left";
   ctx.textBaseline = "top";
 
