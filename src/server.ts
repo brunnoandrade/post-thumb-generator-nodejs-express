@@ -1,6 +1,5 @@
 import express, { Request, Response } from "express";
-import nodeHtmlToImage from "node-html-to-image";
-import path from "path";
+import { createCanvas, loadImage } from "canvas";
 import cors from "cors";
 
 const app = express();
@@ -12,47 +11,119 @@ app.use(
   })
 );
 
-app.set("view engine", "ejs");
-app.set("views", path.join(__dirname, "views"));
-
 app.get("/generate-cover", async (req: Request, res: Response) => {
   const { title, author, date, tags } = req.query;
 
-  try {
-    const tagsArray = Array.isArray(tags) ? tags : tags ? [tags] : [];
+  const tagsArray = Array.isArray(tags) ? tags : tags ? [tags] : [];
 
-    res.render(
-      "cover",
-      { title, author, date, tags: tagsArray.slice(0, 3) },
-      async (err, html) => {
-        if (err || !html) {
-          return res.status(500).send("Erro ao renderizar HTML");
-        }
+  const width = 1200;
+  const height = 630;
+  const canvas = createCanvas(width, height);
+  const ctx = canvas.getContext("2d");
 
-        const result = await nodeHtmlToImage({
-          html,
-          type: "png",
-          quality: 100,
-          puppeteerArgs: {
-            defaultViewport: {
-              width: 1200,
-              height: 630,
-              deviceScaleFactor: 1,
-            },
-          },
-        });
+  ctx.clearRect(0, 0, width, height);
 
-        const buffer = Buffer.isBuffer(result)
-          ? result
-          : Buffer.from(result as string, "binary");
+  const borderSize = 12;
+  ctx.fillStyle = "#c25fff";
+  ctx.fillRect(0, 0, width, height);
 
-        res.set("Content-Type", "image/png");
-        res.send(buffer);
-      }
-    );
-  } catch (error: any) {
-    res.status(500).send("Erro ao gerar thumbnail: " + error.message);
-  }
+  ctx.fillStyle = "#ffffff";
+  ctx.fillRect(
+    borderSize,
+    borderSize,
+    width - borderSize * 2,
+    height - borderSize * 2
+  );
+
+  const padding = 48;
+  const innerX = borderSize + padding;
+  const innerY = borderSize + padding;
+  const innerWidth = width - borderSize * 2 - padding * 2;
+
+  ctx.fillStyle = "#222";
+  ctx.font = "bold 72px Arial";
+  ctx.textAlign = "left";
+  ctx.textBaseline = "top";
+
+  const words = String(title || "Título aqui").split(" ");
+  let line = "";
+  let y = innerY;
+  const lineHeight = 90;
+  words.forEach((word) => {
+    const testLine = line + word + " ";
+    const metrics = ctx.measureText(testLine);
+    if (metrics.width > innerWidth && line !== "") {
+      ctx.fillText(line, innerX, y);
+      line = word + " ";
+      y += lineHeight;
+    } else {
+      line = testLine;
+    }
+  });
+  ctx.fillText(line, innerX, y);
+
+  const footerY = height - borderSize - padding - 20;
+
+  const svgLogo = `
+  <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 500 500" fill="#c25fff">
+    <path d="M111.83,18.25v463.5H388.17V18.25Zm243,432.21H145.14V51.56H354.86Z"/>
+    <path d="M320.48,82.09H181.22V420.38H320.48V292.73l-22-18.08,22-16.43Zm-48.34,291h-41V279.63l41-21.48Zm0-169.12-41,21.37.08-93.31h41Z"/>
+  </svg>
+`;
+
+  const svgBase64 = `data:image/svg+xml;base64,${Buffer.from(svgLogo).toString(
+    "base64"
+  )}`;
+  const logoImg = await loadImage(svgBase64);
+
+  ctx.drawImage(logoImg, innerX - 12, footerY - 25, 48, 48);
+
+  ctx.font = "26px Arial";
+  ctx.fillStyle = "#222";
+  ctx.textAlign = "left";
+  ctx.textBaseline = "middle";
+  ctx.fillText(
+    `${author || "Autor"} - ${date || "2025-09-23"}`,
+    innerX + 40,
+    footerY
+  );
+
+  ctx.font = "20px Arial";
+  ctx.textAlign = "right";
+  ctx.textBaseline = "middle";
+
+  const tagGap = 12;
+  let tagX = width - borderSize - padding;
+  tagsArray
+    .slice(0, 3)
+    .reverse()
+    .forEach((tag) => {
+      const text = `#${tag}`;
+      const metrics = ctx.measureText(text);
+      const tagWidth = metrics.width + 24;
+      const tagHeight = 40;
+
+      ctx.fillStyle = "#eee";
+      ctx.beginPath();
+      ctx.roundRect(
+        tagX - tagWidth,
+        footerY - tagHeight / 2,
+        tagWidth,
+        tagHeight,
+        8
+      );
+      ctx.fill();
+
+      ctx.fillStyle = "#222";
+      ctx.textAlign = "center";
+      ctx.fillText(text, tagX - tagWidth / 2, footerY, tagWidth);
+
+      tagX -= tagWidth + tagGap;
+    });
+
+  const buffer = canvas.toBuffer("image/png");
+  res.set("Content-Type", "image/png");
+  res.send(buffer);
 });
 
 const PORT = process.env.PORT || 3000;
