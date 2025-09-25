@@ -68,3 +68,9 @@ GET /generate-cover?title=Como%20criar%20um%20serviço%20Node.js&author=Bruno%20
 | `date`    | string   | ✅           | `21 de setembro de 2025`        |
 | `tags`    | string[] | ✅           | `carreira`, `programacao`, `devops` |
 
+## Contato
+
+**Bruno Andrade**
+📧 [brunnoandradi@gmail.com](mailto:brunnoandradi@gmail.com)
+🔗 [GitHub](https://github.com/brunnoandrade)
+🌐 [Website](https://brunnoandrade.com)
